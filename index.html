@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="0; url=login.html" />
+  <title>ARKHIVEZ — Redirecting...</title>
+  <script>
+    // Jika sudah login, redirect ke halaman yang sesuai
+    // Jika belum, redirect ke login
+    try {
+      /* Cek sessionStorage dulu (per-tab), baru localStorage */
+      var raw = sessionStorage.getItem('arkhivez_session') || localStorage.getItem('arkhivez_session');
+      var session = raw ? JSON.parse(raw) : null;
+      if (session && session.role) {
+        window.location.replace(session.role === 'admin' ? 'admin.html' : 'catalog.html');
+      } else {
+        window.location.replace('login.html');
+      }
+    } catch(e) {
+      window.location.replace('login.html');
+    }
+  </script>
+</head>
+<body>
+  <p style="font-family:sans-serif;text-align:center;margin-top:4rem;">
+    Mengalihkan ke halaman login...
+  </p>
+</body>
+</html>

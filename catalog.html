@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARKHIVEZ — Katalog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ── Product Card Fixes ── */
+    .product-card__img-wrap {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: #EDE8DF;
+    }
+    .product-card__img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .6s cubic-bezier(.4,0,.2,1), opacity .4s;
+      position: absolute; top: 0; left: 0;
+    }
+    .product-card__img.hover-img { opacity: 0; }
+    .product-card:hover .hover-img { opacity: 1; }
+    .product-card:hover .main-img  { opacity: 0; }
+    .product-card__discount {
+      position: absolute; bottom: 10px; left: 10px;
+      background: #c0392b; color: #fff;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; z-index: 2;
+    }
+    .product-card__wishlist.wishlisted {
+      opacity: 1 !important; transform: translateY(0) !important;
+    }
+    .product-card__fit-tag {
+      display: inline-block; font-size: 9px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      background: #1c1c1e; color: #fff;
+      padding: 2px 7px; border-radius: 3px; margin-bottom: 4px;
+    }
+    .product-card__sizes { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+    .size-chip {
+      font-size: 9px; font-weight: 600; letter-spacing: .05em;
+      border: 1px solid #ddd; border-radius: 3px; padding: 1px 6px;
+      color: #555;
+    }
+    .product-card__stock-warn {
+      font-size: 10px; color: #c0392b; margin: 2px 0;
+    }
+    .product-card__btn--sold {
+      background: #ccc !important; cursor: not-allowed !important;
+    }
+    /* ── Checkout Step Bar ── */
+    .co-panel { max-width: 520px !important; }
+    .co-step-bar {
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.25rem 2rem .75rem;
+    }
+    .co-step-dot {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; transition: all .3s;
+    }
+    .co-step-dot.active   { background: var(--color-gold); color: #fff; }
+    .co-step-dot.done     { background: #2e7d32; color: #fff; }
+    .co-step-dot.inactive { background: #e0e0e0; color: #aaa; }
+    .co-step-line { flex: 1; height: 2px; background: #e0e0e0; margin: 0 6px; }
+
+    /* ── Product Grid: consistent 4-col desktop ── */
+    #productGridPakaian, #productGridAksesoris {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      #productGridPakaian, #productGridAksesoris { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      #productGridPakaian, #productGridAksesoris { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    }
+    /* Force consistent card height */
+    .product-card { height: 100%; }
+    .product-card__info { flex: 1; padding: .85rem .9rem .5rem; display:flex; flex-direction:column; gap:3px; }
+    .product-card__brand { font-size:.65rem; font-weight:700; letter-spacing:.12em; color:var(--color-gold); text-transform:uppercase; }
+    .product-card__name  { font-size:.9rem; font-weight:500; line-height:1.35; margin:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .product-card__price-row { margin-top:auto; padding-top:.4rem; display:flex; align-items:baseline; gap:.5rem; flex-wrap:wrap; }
+    .product-card__price { font-size:.95rem; font-weight:700; color:var(--color-gold,#B8960C); }
+    .product-card__price-original { font-size:.75rem; text-decoration:line-through; color:#aaa; }
+    .product-card__btn { width:100%; padding:.65rem; background:var(--color-dark,#1c1c1e); color:#fff; border:none; cursor:pointer; font-size:.75rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; transition:background .2s, opacity .2s; opacity:0; }
+    .product-card:hover .product-card__btn { opacity:1; }
+    .product-card__btn:hover { background:var(--color-gold,#B8960C) !important; }
+    .product-card__wishlist { opacity:0; transform:translateY(-4px); transition:opacity .2s, transform .2s; }
+    .product-card:hover .product-card__wishlist { opacity:1; transform:translateY(0); }
+    /* badge exclusive */
+    .badge--exclusive { background: #6a1b9a; }
+    .badge--hot       { background: #e65100; }
+  </style>
+</head>
+<body class="page-catalog">
+
+  <!-- ===== HEADER ===== -->
+  
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner container">
+
+      <!-- Hamburger Mobile -->
+      <button class="hamburger" id="hamburger" aria-label="Buka menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- Logo -->
+      <a href="catalog.html" class="site-logo">ARKHIVEZ</a>
+
+      <!-- Navigasi Desktop -->
+      <nav class="site-nav" id="siteNav" aria-label="Navigasi utama">
+        <ul class="nav-list">
+          <li><a href="#pakaian" class="nav-link nav-link--active">Pakaian</a></li>
+          <li><a href="#aksesoris" class="nav-link">Aksesoris</a></li>
+          <li><a href="#" class="nav-link">Sale</a></li>
+          <li><a href="#" class="nav-link">Brand</a></li>
+        </ul>
+      </nav>
+
+      <!-- Area Kanan Header -->
+      <div class="header-actions">
+        <button class="header-action-btn" onclick="openHistoryModal()" aria-label="Riwayat Pesanan" title="Riwayat Pesanan">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+</button>
+
+<div class="cart-modal" id="historyModal" role="dialog" aria-modal="true" aria-label="Riwayat Pesanan" hidden>
+    <div class="cart-modal__backdrop" id="historyBackdrop"></div>
+    <div class="cart-modal__panel">
+      <div class="cart-modal__header">
+        <h3>Riwayat Pesanan</h3>
+        <button class="cart-modal__close" id="historyClose" aria-label="Tutup riwayat">✕</button>
+      </div>
+      <div class="cart-modal__body" id="historyItems" style="background: var(--color-bg); padding: 1.5rem 1rem;">
+        </div>
+    </div>
+  </div>
+        <!-- Tombol Keranjang -->
+        <button class="btn-cart" id="cartBtn" aria-label="Lihat keranjang">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <!-- Badge jumlah item di keranjang -->
+          <span class="cart-badge" id="cartBadge">0</span>
+          <button class="btn-ghost" onclick="window.openWishlistModal()" style="font-size: 0.9rem;">
+   Wishlist
+</button>
+        </button>
+
+        <!-- Info User + Profil + Logout -->
+        <div class="user-menu" style="display:flex;align-items:center;gap:.5rem">
+          <button class="user-avatar-btn" onclick="window.openProfileModal()" title="Pengaturan Profil"
+                  style="width:34px;height:34px;border-radius:50%;background:#B8960C;border:none;cursor:pointer;color:#fff;font-weight:700;font-size:.75rem;display:flex;align-items:center;justify-content:center;letter-spacing:.5px" id="headerAvatar">
+            BU
+          </button>
+          <span class="user-name" id="userName" style="cursor:pointer" onclick="window.openProfileModal()">Pelanggan</span>
+          <button class="btn-logout" id="btnLogout" title="Keluar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+  <!-- END HEADER -->
+
+  <!-- Overlay untuk mobile nav -->
+  <div class="nav-overlay" id="navOverlay"></div>
+
+  <main>
+
+    <!-- ===== HERO SECTION ===== -->
+    <!--
+      Hero minimalis dengan teks editorial besar + CTA.
+      Background menggunakan gradient CSS sebagai placeholder gambar.
+    -->
+    <section class="hero-section">
+      <div class="hero-bg" aria-hidden="true">
+        <!-- Ornamen geometris dekoratif -->
+        <div class="hero-ornament hero-ornament--1"></div>
+        <div class="hero-ornament hero-ornament--2"></div>
+      </div>
+
+      <div class="hero-content container">
+        <div class="hero-text">
+          <p class="hero-tagline">Koleksi Terbaru 2024</p>
+          <h1 class="hero-title">
+            Tampil<br/>
+            <em>Percaya Diri,</em><br/>
+            Tampil Maskulin.
+          </h1>
+          <p class="hero-desc">
+            Pilihan fashion dan aksesoris pria berkualitas premium<br/>
+            dengan harga yang terjangkau untuk UMKM Indonesia.
+          </p>
+          <div class="hero-cta">
+            <a href="#pakaian" class="btn-primary">Jelajahi Koleksi</a>
+            <a href="#aksesoris" class="btn-ghost">Lihat Aksesoris</a>
+          </div>
+        </div>
+
+        <!-- Kartu highlight statistik -->
+        <div class="hero-stats" aria-label="Statistik toko">
+          <div class="stat-item">
+            <span class="stat-num">200+</span>
+            <span class="stat-label">Produk</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-num">1.2K</span>
+            <span class="stat-label">Pelanggan</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-num">4.9★</span>
+            <span class="stat-label">Rating</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- END HERO -->
+
+    <!-- ===== BANNER PROMO ===== -->
+    <div class="promo-banner">
+      <div class="container">
+        <p>🎉 Gratis Ongkir untuk pembelian pertama — Gunakan kode: <strong>ARKHIVEZ 2026</strong></p>
+      </div>
+    </div>
+
+    <!-- ===== KATEGORI CEPAT ===== -->
+    <section class="quick-cats container">
+      <div class="quick-cat-grid">
+        <a href="#pakaian" class="quick-cat-item">
+          <div class="quick-cat-icon">👔</div>
+          <span>Kemeja</span>
+        </a>
+        <a href="#pakaian" class="quick-cat-item">
+          <div class="quick-cat-icon">👖</div>
+          <span>Celana</span>
+        </a>
+        <a href="#pakaian" class="quick-cat-item">
+          <div class="quick-cat-icon">🧥</div>
+          <span>Jaket</span>
+        </a>
+        <a href="#aksesoris" class="quick-cat-item">
+          <div class="quick-cat-icon">⌚</div>
+          <span>Jam Tangan</span>
+        </a>
+        <a href="#aksesoris" class="quick-cat-item">
+          <div class="quick-cat-icon">👞</div>
+          <span>Sepatu</span>
+        </a>
+        <a href="#aksesoris" class="quick-cat-item">
+          <div class="quick-cat-icon">🎒</div>
+          <span>Tas</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== SEKSI PRODUK: PAKAIAN ===== -->
+    <!--
+      Grid produk di-render oleh JS dari array data produk (products.js).
+      Setiap kartu produk memiliki:
+      - Gambar placeholder (via picsum.photos dengan seed unik)
+      - Badge (New / Sale)
+      - Nama produk, brand, harga
+      - Tombol "Beli" → menambah ke keranjang (localStorage)
+    -->
+    <section class="product-section" id="pakaian">
+      <div class="container">
+        <!-- Section Header -->
+        <div class="section-header">
+          <div class="section-header__left">
+            <p class="section-overline">Koleksi Terpopuler</p>
+            <h2 class="section-title">Pakaian Pria</h2>
+          </div>
+          <a href="#" class="section-viewall">Lihat Semua →</a>
+        </div>
+
+        <!-- Filter Chip -->
+        <div class="filter-chips" role="group" aria-label="Filter pakaian">
+          <button class="chip chip--active" data-filter="all" data-section="pakaian">Semua</button>
+          <button class="chip" data-filter="kemeja" data-section="pakaian">Kemeja</button>
+          <button class="chip" data-filter="celana" data-section="pakaian">Celana</button>
+          <button class="chip" data-filter="jaket" data-section="pakaian">Jaket</button>
+          <button class="chip" data-filter="kaos" data-section="pakaian">Kaos</button>
+        </div>
+
+        <!-- Grid Produk — diisi oleh JS -->
+        <div class="product-grid" id="productGridPakaian">
+          <!-- Skeleton loading -->
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEKSI PRODUK: AKSESORIS ===== -->
+    <section class="product-section product-section--dark" id="aksesoris">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-header__left">
+            <p class="section-overline">Lengkapi Penampilan</p>
+            <h2 class="section-title">Aksesoris</h2>
+          </div>
+          <a href="#" class="section-viewall">Lihat Semua →</a>
+        </div>
+
+        <div class="container" style="margin-bottom: 2rem; background: var(--color-surface); padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+  <label for="priceRange" style="font-weight: 500; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">
+    Batas Harga Maksimal: <span id="priceValue" style="color: var(--color-gold); font-weight: 600;">Rp 500.000</span>
+  </label>
+  <input type="range" id="priceRange" min="50000" max="500000" step="10000" value="500000" style="width: 100%; accent-color: var(--color-gold);">
+</div>
+
+        <div class="filter-chips" role="group" aria-label="Filter aksesoris">
+          <button class="chip chip--active" data-filter="all" data-section="aksesoris">Semua</button>
+          <button class="chip" data-filter="jam-tangan" data-section="aksesoris">Jam Tangan</button>
+          <button class="chip" data-filter="sepatu" data-section="aksesoris">Sepatu</button>
+          <button class="chip" data-filter="tas" data-section="aksesoris">Tas</button>
+          <button class="chip" data-filter="ikat-pinggang" data-section="aksesoris">Ikat Pinggang</button>
+        </div>
+
+        <div class="product-grid" id="productGridAksesoris">
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+          <div class="product-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BANNER CTA ===== -->
+    <section class="cta-banner">
+      <div class="container">
+        <div class="cta-banner__inner">
+          <div class="cta-banner__text">
+            <h2>Daftar & Dapatkan<br/><em>Diskon 15%</em></h2>
+            <p>Untuk pembelian pertama Anda bersama ARKHIVEZ</p>
+          </div>
+          <button class="btn-primary btn-primary--light" onclick="alert('Fitur akan segera hadir!')">
+            Daftar Sekarang
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="footer-logo">ARKHIVEZ</span>
+          <p>Fashion & Aksesoris Pria<br/>berkualitas untuk semua kalangan.</p>
+          <div class="footer-socials">
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="TikTok">TK</a>
+            <a href="#" aria-label="WhatsApp">WA</a>
+          </div>
+        </div>
+
+        <div class="footer-links">
+          <h4>Belanja</h4>
+          <ul>
+            <li><a href="#pakaian">Pakaian Pria</a></li>
+            <li><a href="#aksesoris">Aksesoris</a></li>
+            <li><a href="#">Sale</a></li>
+            <li><a href="#">Brand Lokal</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>Bantuan</h4>
+          <ul>
+            <li><a href="#">Cara Pembelian</a></li>
+            <li><a href="#">Pengiriman</a></li>
+            <li><a href="#">Pengembalian</a></li>
+            <li><a href="#">Hubungi Kami</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-contact">
+          <h4>Kontak</h4>
+          <p>📍 Pekanbaru, Riau</p>
+          <p>📞 +62 812-3456-7890</p>
+          <p>✉️ hello@mankutu.id</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 ARKHIVEZ. Hak Cipta Dilindungi.</p>
+        <p>Made with ♥ for UMKM Indonesia</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== MODAL KERANJANG ===== -->
+  <!--
+    Modal ini muncul saat tombol keranjang di-klik.
+    Isi dirender oleh JS dari localStorage.
+  -->
+  <div class="cart-modal" id="cartModal" role="dialog" aria-modal="true" aria-label="Keranjang Belanja" hidden>
+    <div class="cart-modal__backdrop" id="cartBackdrop"></div>
+    <div class="cart-modal__panel">
+      <div class="cart-modal__header">
+        <h3>Keranjang Belanja</h3>
+        <button class="cart-modal__close" id="cartClose" aria-label="Tutup keranjang">✕</button>
+      </div>
+      <div class="cart-modal__body" id="cartItems">
+        <!-- Diisi oleh JS -->
+      </div>
+      <div class="cart-modal__footer">
+        <div class="cart-total">
+          <span>Total</span>
+          <strong id="cartTotal">Rp 0</strong>
+        </div>
+        <button class="btn-primary btn-checkout" onclick="openCheckoutModal()">          Lanjut Checkout →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CHECKOUT MODAL — MULTI STEP ===== -->
+  <div class="cart-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-label="Checkout Pesanan" hidden>
+    <div class="cart-modal__backdrop" id="checkoutBackdrop"></div>
+    <div class="cart-modal__panel co-panel">
+
+      <!-- Step Indicator -->
+      <div class="co-step-bar">
+        <div class="co-step-dot active" data-step="1"><span>1</span></div>
+        <div class="co-step-line"></div>
+        <div class="co-step-dot inactive" data-step="2"><span>2</span></div>
+        <div class="co-step-line"></div>
+        <div class="co-step-dot inactive" data-step="3"><span>✓</span></div>
+      </div>
+
+      <!-- Header -->
+      <div class="cart-modal__header">
+        <h3 id="checkoutModalTitle">Checkout Pesanan</h3>
+        <button class="cart-modal__close" id="checkoutClose" aria-label="Tutup">✕</button>
+      </div>
+
+      <!-- STEP 1: Form -->
+      <div id="checkoutStep1">
+        <div class="cart-modal__body" style="padding-bottom:1rem">
+          <form id="checkoutForm" class="modal-form" style="padding:0">
+            <div class="form-group">
+              <label class="form-label" for="coName">Nama Penerima <span class="required">*</span></label>
+              <input type="text" id="coName" class="form-input" placeholder="Nama lengkap penerima" required>
+            </div>
+            <div class="form-group" style="margin-top:1rem">
+              <label class="form-label" for="coPhone">Nomor Telepon <span class="required">*</span></label>
+              <input type="tel" id="coPhone" class="form-input" placeholder="Contoh: 0812-xxxx-xxxx" required>
+            </div>
+            <div class="form-group" style="margin-top:1rem">
+              <label class="form-label" for="coAddress">Alamat Pengiriman <span class="required">*</span></label>
+              <textarea id="coAddress" class="form-input form-textarea" rows="3" placeholder="Alamat lengkap beserta kode pos..." required></textarea>
+            </div>
+            <div class="form-group" style="margin-top:1rem">
+              <label class="form-label" for="coPayment">Metode Pembayaran</label>
+              <select id="coPayment" class="form-input">
+                <option value="Transfer Bank">🏦 Transfer Bank (BCA)</option>
+                <option value="E-Wallet">📱 E-Wallet (GoPay/OVO/DANA)</option>
+                <option value="COD">🤝 Bayar di Tempat (COD)</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="cart-modal__footer">
+          <div class="cart-total">
+            <span>Total Bayar</span>
+            <strong id="checkoutTotalPreview" style="color:var(--color-gold)">Rp 0</strong>
+          </div>
+          <button type="submit" form="checkoutForm" class="btn-primary" id="btnProcessCheckout">
+            Lanjut ke Pembayaran →
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Payment Instruction -->
+      <div id="checkoutStep2" hidden>
+        <div class="cart-modal__body" id="paymentInstructionBody" style="padding-bottom:1rem">
+          <!-- rendered by JS -->
+        </div>
+        <div class="cart-modal__footer" style="gap:.75rem">
+          <button onclick="window.goToCheckoutStep(1)" class="btn-ghost" style="flex:0 0 auto;padding:.75rem 1.25rem">← Kembali</button>
+          <button onclick="window.confirmPayment()" class="btn-primary" style="flex:1" id="btnConfirmPayment">
+            Konfirmasi Pembayaran ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Success -->
+      <div id="checkoutStep3" hidden>
+        <div class="cart-modal__body" id="orderSuccessBody">
+          <!-- rendered by JS -->
+        </div>
+        <div class="cart-modal__footer">
+          <button onclick="window.closeCheckoutFinal()" class="btn-primary" style="width:100%">
+            Selesai & Tutup ✓
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="quickViewModal" hidden>
+  <div class="modal-backdrop" id="quickViewBackdrop"></div>
+  <div class="modal" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Detail Produk</h3>
+      <button class="modal-close" id="quickViewClose" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-scroll-body" id="quickViewBody" style="padding: 1.5rem;">
+      Memuat...
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="wishlistModal" hidden>
+  <div class="modal-backdrop" id="wishlistBackdrop"></div>
+  <div class="modal" style="max-width: 800px;">
+    <div class="modal-header">
+      <h3 class="modal-title">❤️ Produk Favorit Saya</h3>
+      <button class="modal-close" id="wishlistClose">✕</button>
+    </div>
+    <div class="modal-scroll-body" style="padding: 1.5rem;">
+      <div id="wishlistItems" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+        </div>
+    </div>
+  </div>
+</div>
+
+  <!-- ===== TOAST NOTIFICATION ===== -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Script Produk & Katalog -->
+  <script src="supabase.js"></script>
+  <script src="auth.js"></script>
+  <script src="catalog.js"></script>
+
+  <!-- ===== MODAL PROFIL PELANGGAN ===== -->
+  <div class="cart-modal" id="profileModal" role="dialog" aria-modal="true" aria-label="Pengaturan Profil" hidden>
+    <div class="cart-modal__backdrop" onclick="document.getElementById('profileModal').hidden=true;document.body.style.overflow=''"></div>
+    <div class="cart-modal__panel" style="max-width:480px">
+      <div class="cart-modal__header">
+        <h3>Pengaturan Profil</h3>
+        <button class="cart-modal__close" onclick="document.getElementById('profileModal').hidden=true;document.body.style.overflow=''">✕</button>
+      </div>
+      <div class="cart-modal__body" style="padding:1.5rem">
+
+        <!-- Avatar + upload + warna -->
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <label for="avatarFileInput" style="cursor:pointer;display:inline-block;position:relative;" title="Klik untuk ganti foto">
+            <div id="profAvatarCircle" style="width:72px;height:72px;border-radius:50%;background:#B8960C;color:#fff;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;letter-spacing:.05em;overflow:hidden;border:3px solid rgba(184,150,12,.25);">BU</div>
+            <span style="font-size:.7rem;color:var(--color-gold);display:block;margin-bottom:.5rem;">📷 Ganti Foto</span>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="window.handleAvatarUpload(this)">
+          </label>
+          <p style="font-size:.75rem;color:#aaa;margin-bottom:.5rem">Atau pilih warna:</p>
+          <div style="display:flex;justify-content:center;gap:.4rem">
+            <button class="avatar-color-opt selected" data-color="#B8960C" onclick="window.setAvatarColor('#B8960C')" style="width:22px;height:22px;border-radius:50%;background:#B8960C;border:2px solid #fff;cursor:pointer;box-shadow:0 0 0 2px #B8960C"></button>
+            <button class="avatar-color-opt" data-color="#2e7d32" onclick="window.setAvatarColor('#2e7d32')" style="width:22px;height:22px;border-radius:50%;background:#2e7d32;border:2px solid #fff;cursor:pointer"></button>
+            <button class="avatar-color-opt" data-color="#0277bd" onclick="window.setAvatarColor('#0277bd')" style="width:22px;height:22px;border-radius:50%;background:#0277bd;border:2px solid #fff;cursor:pointer"></button>
+            <button class="avatar-color-opt" data-color="#6a1b9a" onclick="window.setAvatarColor('#6a1b9a')" style="width:22px;height:22px;border-radius:50%;background:#6a1b9a;border:2px solid #fff;cursor:pointer"></button>
+            <button class="avatar-color-opt" data-color="#c62828" onclick="window.setAvatarColor('#c62828')" style="width:22px;height:22px;border-radius:50%;background:#c62828;border:2px solid #fff;cursor:pointer"></button>
+            <button class="avatar-color-opt" data-color="#37474f" onclick="window.setAvatarColor('#37474f')" style="width:22px;height:22px;border-radius:50%;background:#37474f;border:2px solid #fff;cursor:pointer"></button>
+          </div>
+        </div>
+
+        <!-- Form profil -->
+        <div style="display:grid;gap:1rem">
+          <div class="form-group">
+            <label class="form-label">Nama Lengkap</label>
+            <input id="profName" type="text" class="form-input" placeholder="Nama lengkap Anda"
+                   oninput="updateAvatarDisplay(this.value,null)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email <span style="font-size:.75rem;color:#aaa">(tidak dapat diubah)</span></label>
+            <input id="profEmail" type="email" class="form-input" disabled style="opacity:.6;background:#f5f5f5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nomor Telepon</label>
+            <input id="profPhone" type="tel" class="form-input" placeholder="0812-xxxx-xxxx">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Alamat Utama</label>
+            <textarea id="profAddress" class="form-input form-textarea" rows="2" placeholder="Alamat lengkap Anda"></textarea>
+          </div>
+
+          <!-- Ganti password -->
+          <details style="border:1px solid #e0e0e0;border-radius:8px;padding:.75rem">
+            <summary style="cursor:pointer;font-size:.85rem;font-weight:600;list-style:none">🔒 Ganti Password</summary>
+            <div style="margin-top:.75rem;display:grid;gap:.75rem">
+              <div class="form-group">
+                <label class="form-label" style="font-size:.8rem">Password Lama</label>
+                <input id="profPwOld" type="password" class="form-input" placeholder="Password saat ini">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:.8rem">Password Baru <span style="color:#aaa;font-size:.75rem">(min. 6 karakter)</span></label>
+                <input id="profPwNew" type="password" class="form-input" placeholder="Password baru">
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="cart-modal__footer">
+        <button onclick="document.getElementById('profileModal').hidden=true;document.body.style.overflow=''" class="btn-ghost">Batal</button>
+        <button onclick="window.saveProfile()" class="btn-primary">Simpan Perubahan ✓</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

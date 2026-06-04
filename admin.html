@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MANKUTU — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .size-chip { display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .65rem;border:1.5px solid #ddd;border-radius:20px;font-size:.78rem;cursor:pointer;transition:all .15s;user-select:none; }
+    .size-chip:hover { border-color:var(--color-gold); }
+    .size-chip input[type=checkbox] { accent-color:var(--color-gold);width:13px;height:13px;cursor:pointer; }
+    .size-chip:has(input:checked) { border-color:var(--color-gold);background:#fdf8ec;font-weight:600; }
+  </style>
+  <style>
+    /* ── SVG Icon helper ── */
+    .icon { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .icon svg { display:block; }
+
+    /* ── Sidebar nav icon ── */
+    .sidebar-nav-icon { display:inline-flex; align-items:center; width:18px; }
+
+    /* ── Order item rows dalam form ── */
+    #orderItemsBody td { vertical-align:middle; }
+    .order-item-row select,
+    .order-item-row input { font-size:.82rem; padding:.3rem .5rem; }
+
+    /* ── Detail modal body scroll ── */
+    .modal-scroll-body { max-height:65vh; overflow-y:auto; padding-right:.25rem; }
+
+    /* ── Laporan grid ── */
+    .report-stat-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:1rem;
+      padding:1.5rem 1.5rem .75rem;
+    }
+    .report-stat-box {
+      background:var(--color-bg);
+      border-radius:8px;
+      padding:1.1rem;
+      text-align:center;
+    }
+    .report-stat-box p:first-child {
+      font-size:.7rem;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:var(--color-text-muted);
+      margin-bottom:.35rem;
+    }
+    .report-stat-box strong {
+      font-family:var(--font-display);
+      font-size:1.6rem;
+      font-weight:600;
+      color:var(--color-dark);
+    }
+
+    /* ── Tabel item pesanan ── */
+    .items-table { width:100%; border-collapse:collapse; }
+    .items-table th { background:var(--color-bg); padding:.45rem .65rem; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--color-text-muted); text-align:left; }
+    .items-table td { padding:.45rem .65rem; border-bottom:1px solid rgba(28,28,30,.05); font-size:.85rem; }
+    .items-table tfoot td { border-top:2px solid var(--color-bg); font-weight:700; }
+
+    /* ── Tombol add item ── */
+    .btn-add-item {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.4rem .9rem; border:1.5px dashed rgba(28,28,30,.2);
+      border-radius:4px; font-size:.8rem; color:var(--color-text-muted);
+      background:none; cursor:pointer; transition:all .2s;
+      margin-top:.5rem;
+    }
+    .btn-add-item:hover { border-color:var(--color-gold); color:var(--color-gold); }
+
+    /* ── Order total preview ── */
+    .order-total-bar {
+      display:flex; align-items:center; justify-content:flex-end;
+      gap:.5rem; padding:.6rem .5rem 0;
+      font-size:.85rem; color:var(--color-text-muted);
+    }
+    .order-total-bar strong {
+      font-family:var(--font-display);
+      font-size:1.2rem;
+      color:var(--color-gold);
+    }
+
+    /* Badge danger untuk dibatalkan */
+    .badge--danger { background:rgba(176,48,48,.1); color:var(--color-danger); }
+
+    /* Admin topbar right gap */
+    .admin-topbar-right { gap:.75rem; }
+  </style>
+</head>
+<body class="page-admin">
+<div class="admin-layout">
+
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<aside class="admin-sidebar" id="adminSidebar">
+
+  <div class="sidebar-brand">
+    <span class="sidebar-logo">MANKUTU</span>
+    <span class="sidebar-role">Admin Panel</span>
+  </div>
+
+  <div class="sidebar-profile">
+    <div class="sidebar-avatar">A</div>
+    <div class="sidebar-profile-info">
+      <p class="sidebar-profile-name" id="adminName">Administrator</p>
+      <p class="sidebar-profile-role">Super Admin</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Navigasi admin">
+    <ul class="sidebar-nav-list">
+
+      <li><a href="#" class="sidebar-nav-link sidebar-nav-link--active" data-section="dashboard">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </span>
+        <span>Dashboard</span>
+      </a></li>
+
+      <li><a href="#" class="sidebar-nav-link" data-section="produk">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </span>
+        <span>Produk</span>
+      </a></li>
+
+      <li><a href="#" class="sidebar-nav-link" data-section="pesanan">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </span>
+        <span>Pesanan</span>
+      </a></li>
+
+      <li><a href="#" class="sidebar-nav-link" data-section="pelanggan">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </span>
+        <span>Pelanggan</span>
+      </a></li>
+
+      <li><a href="#" class="sidebar-nav-link" data-section="laporan">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6"  y1="20" x2="6"  y2="14"/>
+          </svg>
+        </span>
+        <span>Laporan</span>
+      </a></li>
+
+      <li class="sidebar-nav-separator"></li>
+
+      <li><a href="#" class="sidebar-nav-link" data-section="pengaturan">
+        <span class="sidebar-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </span>
+        <span>Pengaturan</span>
+      </a></li>
+
+    </ul>
+  </nav>
+
+  <button class="sidebar-logout" id="adminLogout">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Keluar
+  </button>
+
+</aside>
+
+<!-- ============================================================
+     KONTEN UTAMA
+     ============================================================ -->
+<div class="admin-main">
+
+  <!-- ── Banner Notifikasi Stok Menipis ── -->
+  <div id="lowStockBanner" style="display:none;background:#FFF8E1;border-left:4px solid #F9A825;padding:.75rem 1.25rem;margin-bottom:1rem;border-radius:0 6px 6px 0;align-items:center;gap:.75rem;flex-wrap:wrap;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F9A825" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span style="font-size:.85rem;font-weight:500;flex:1;" id="lowStockMsg">Ada produk dengan stok menipis.</span>
+    <button onclick="showSection('produk')" style="font-size:.78rem;color:#E65100;background:none;border:1px solid #E65100;border-radius:3px;padding:.2rem .65rem;cursor:pointer;">Lihat Produk</button>
+    <button onclick="document.getElementById('lowStockBanner').style.display='none'" style="background:none;border:none;cursor:pointer;color:#999;font-size:1.1rem;">✕</button>
+  </div>
+
+  <!-- TOP BAR -->
+  <header class="admin-topbar">
+    <button class="admin-hamburger" id="adminHamburger" aria-label="Toggle sidebar">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="admin-topbar-left">
+      <h1 class="admin-page-title" id="adminPageTitle">Dashboard</h1>
+      <p class="admin-breadcrumb">MANKUTU &rsaquo; <span id="adminBreadcrumb">Dashboard</span></p>
+    </div>
+    <div class="admin-topbar-right">
+      <button class="admin-notif-btn" aria-label="Notifikasi">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+        <span class="notif-dot"></span>
+      </button>
+      <a href="catalog.html" class="btn-visit-store" target="_blank">Lihat Toko
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:3px;">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+          <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       SECTION: DASHBOARD
+       ====================================================== -->
+  <div class="admin-content" id="sectionDashboard">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-card--primary">
+        <div class="kpi-card__icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </div>
+        <div class="kpi-card__info">
+          <p class="kpi-card__label">Pendapatan (Pesanan Selesai)</p>
+          <p class="kpi-card__value" id="kpiRevenue">—</p>
+          <p class="kpi-card__change kpi-card__change--up">
+            <span id="kpiSelesai">—</span> pesanan selesai
+          </p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+        </div>
+        <div class="kpi-card__info">
+          <p class="kpi-card__label">Total Pesanan</p>
+          <p class="kpi-card__value" id="kpiTotalOrders">—</p>
+          <p class="kpi-card__change">
+            <span id="kpiDiproses">—</span> sedang diproses
+          </p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div class="kpi-card__info">
+          <p class="kpi-card__label">Produk Aktif</p>
+          <p class="kpi-card__value" id="kpiTotalProduct">—</p>
+          <p class="kpi-card__change">Tampil di katalog</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-card__icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <div class="kpi-card__info">
+          <p class="kpi-card__label">Total Pelanggan</p>
+          <p class="kpi-card__value" id="kpiTotalCustomer">—</p>
+          <p class="kpi-card__change">Avg. order: <span id="kpiAvgOrder">—</span></p>
+          <span id="kpiDikirim" style="display:none;">0</span>
+        </div>
+      </div>
+
+    </div><!-- /kpi-grid -->
+
+    <!-- Pesanan Terbaru -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h3>Pesanan Terbaru</h3>
+        <button class="btn-text" onclick="showSection('pesanan')">Lihat Semua &rarr;</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID &amp; Tanggal</th>
+              <th>Pelanggan</th>
+              <th>Produk</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashRecentOrders">
+            <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /sectionDashboard -->
+
+  <!-- ======================================================
+       SECTION: PRODUK
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionProduk">
+    <div class="admin-card">
+
+      <div class="admin-card-header">
+        <h3>Manajemen Produk</h3>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+          <div id="bulkEditBar" style="display:none;align-items:center;gap:.5rem;padding:.3rem .75rem;background:#EEF6EE;border:1px solid #81C784;border-radius:4px;">
+            <span style="font-size:.8rem;color:#2e7d32;font-weight:600">Status massal:</span>
+            <select id="bulkStatusSel" class="table-select" style="font-size:.78rem;padding:.25rem .5rem;">
+              <option value="aktif">Aktif</option>
+              <option value="nonaktif">Non-aktif</option>
+            </select>
+            <button id="btnApplyBulk" class="btn-icon" style="background:#2e7d32;color:#fff;font-size:.75rem;padding:.25rem .6rem;height:auto;border-radius:3px;">✓ Terapkan</button>
+          </div>
+          <div id="multiDeleteBar" style="display:none;align-items:center;gap:.5rem;padding:.3rem .75rem;background:rgba(176,48,48,.06);border:1px solid rgba(176,48,48,.2);border-radius:4px;">
+            <span style="font-size:.8rem;color:#b03030;font-weight:600"><span id="selectedCount">0</span> dipilih</span>
+            <button id="btnHapusTerpilih" class="btn-icon" style="background:#b03030;color:#fff;font-size:.75rem;padding:.25rem .6rem;height:auto;border-radius:3px;">🗑 Hapus Terpilih</button>
+          </div>
+          <button class="btn-primary btn-primary--sm" id="btnTambahProduk">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px;">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Tambah Produk
+        </button>
+        </div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="table-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="productSearch" placeholder="Cari nama, brand, ID produk..." class="table-search-input" />
+        </div>
+        <div class="table-filters">
+          <select class="table-select" id="filterKategori">
+            <option value="">Semua Kategori</option>
+            <option value="pakaian">Pakaian</option>
+            <option value="aksesoris">Aksesoris</option>
+          </select>
+          <select class="table-select" id="filterStatus">
+            <option value="">Semua Status</option>
+            <option value="aktif">Aktif</option>
+            <option value="nonaktif">Non-aktif</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width:36px;text-align:center"><input type="checkbox" id="checkAllProds" title="Pilih Semua" style="width:15px;height:15px;cursor:pointer"></th>
+              <th>No</th><th>Produk</th><th>Kategori</th><th>Sub-Kategori</th>
+              <th>Harga</th><th>Stok</th><th>Status</th><th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody">
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Memuat produk...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-pagination">
+        <p class="pagination-info" id="paginationInfo">—</p>
+        <div class="pagination-controls">
+          <button class="pagination-btn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="pagination-btn pagination-btn--active">1</button>
+          <button class="pagination-btn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /sectionProduk -->
+
+  <!-- ======================================================
+       SECTION: PESANAN
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionPesanan">
+    <div class="admin-card">
+
+      <div class="admin-card-header">
+        <h3>Manajemen Pesanan</h3>
+        <button class="btn-primary btn-primary--sm" id="btnTambahPesanan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px;">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Tambah Pesanan
+        </button>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="table-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="orderSearch" placeholder="Cari ID, nama pelanggan, produk..." class="table-search-input" />
+        </div>
+        <div class="table-filters">
+          <select class="table-select" id="filterOrdStatus">
+            <option value="">Semua Status</option>
+            <option value="diproses">Diproses</option>
+            <option value="dikirim">Dikirim</option>
+            <option value="selesai">Selesai</option>
+            <option value="dibatalkan">Dibatalkan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID &amp; Tanggal</th><th>Pelanggan</th><th>Produk</th>
+              <th>Total</th><th>Pembayaran</th><th>Status</th><th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="orderTableBody">
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Memuat pesanan...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-pagination">
+        <p class="pagination-info" id="orderInfo">—</p>
+      </div>
+
+    </div>
+  </div><!-- /sectionPesanan -->
+
+  <!-- ======================================================
+       SECTION: PELANGGAN
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionPelanggan">
+    <div class="admin-card">
+
+      <div class="admin-card-header">
+        <h3>Data Pelanggan</h3>
+        <button class="btn-primary btn-primary--sm" id="btnTambahPelanggan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:4px;">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Tambah Pelanggan
+        </button>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="table-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="customerSearch" placeholder="Cari nama, email, nomor HP..." class="table-search-input" />
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>No</th><th>Nama</th><th>Email</th><th>No. HP</th>
+              <th style="text-align:center;">Pesanan</th><th>Total Belanja</th>
+              <th>Bergabung</th><th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="customerTableBody">
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--color-text-muted);">Memuat pelanggan...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-pagination">
+        <p class="pagination-info" id="customerInfo">—</p>
+      </div>
+
+    </div>
+  </div><!-- /sectionPelanggan -->
+
+  <!-- ======================================================
+       SECTION: LAPORAN
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionLaporan">
+
+    <!-- KPI Utama -->
+    <div class="admin-card" style="overflow:visible;margin-bottom:1.25rem;">
+      <div class="admin-card-header">
+        <h3>Ringkasan Penjualan</h3>
+        <div style="display:flex;gap:.5rem;">
+          <button class="btn-primary btn-primary--sm" onclick="exportLaporanCSV()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+          <button class="btn-ghost btn-ghost--sm" onclick="exportLaporanPrint()">🖨 Cetak</button>
+        </div>
+      </div>
+      <div class="report-stat-grid">
+        <div class="report-stat-box"><p>Total Pendapatan</p><strong id="rptRevenue">—</strong></div>
+        <div class="report-stat-box"><p>Total Transaksi</p><strong id="rptOrders">—</strong></div>
+        <div class="report-stat-box"><p>Total Pelanggan</p><strong id="rptCustomers">—</strong></div>
+        <div class="report-stat-box"><p>Rata-rata Order</p><strong id="rptAvgOrder">—</strong></div>
+      </div>
+    </div>
+
+    <!-- Status + Produk Terlaris -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
+      <div class="admin-card">
+        <div class="admin-card-header"><h3>Status Pesanan</h3></div>
+        <div style="padding:1rem 1.5rem 1.5rem;" id="rptBreakdown">—</div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-header"><h3>Produk Terlaris</h3></div>
+        <div style="padding:1rem 1.5rem 1.5rem;" id="rptTopProducts">—</div>
+      </div>
+    </div>
+
+    <!-- Stok Menipis -->
+    <div class="admin-card" style="margin-bottom:1.25rem;">
+      <div class="admin-card-header"><h3>⚠️ Produk Stok Menipis</h3><small style="color:var(--color-text-muted)">Stok &le; 5</small></div>
+      <div style="padding:1rem 1.5rem 1.5rem;" id="rptLowStock">—</div>
+    </div>
+
+    <!-- Tabel semua pesanan untuk export -->
+    <div class="admin-card">
+      <div class="admin-card-header"><h3>Semua Pesanan</h3></div>
+      <div class="table-wrapper">
+        <table class="admin-table" id="rptOrderTable">
+          <thead><tr><th>ID</th><th>Tanggal</th><th>Pelanggan</th><th>Total</th><th>Metode</th><th>Status</th></tr></thead>
+          <tbody id="rptOrderTableBody">—</tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /sectionLaporan -->
+
+  <!-- ======================================================
+       SECTION: PENGATURAN
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionPengaturan">
+    <div class="admin-card">
+      <div class="admin-card-header"><h3>Pengaturan Toko</h3></div>
+      <div style="padding:1.5rem;display:grid;gap:1.25rem;max-width:520px;">
+        <div class="form-group">
+          <label class="form-label">Nama Toko</label>
+          <input type="text" class="form-input" id="settingNamaToko" value="MANKUTU Store" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Toko</label>
+          <input type="email" class="form-input" id="settingEmail" value="hello@arkhize.id" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nomor WhatsApp</label>
+          <input type="tel" class="form-input" id="settingWA" value="+62 812-3456-7890" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alamat</label>
+          <input type="text" class="form-input" id="settingAlamat" value="Pekanbaru, Riau" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi Toko</label>
+          <textarea class="form-input form-textarea" id="settingDeskripsi" rows="3">Fashion &amp; Aksesoris Pria berkualitas untuk semua kalangan.</textarea>
+        </div>
+        <button class="btn-primary btn-primary--sm" onclick="saveSetting()" style="width:fit-content;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Simpan Pengaturan
+        </button>
+      </div>
+    </div>
+  </div><!-- /sectionPengaturan -->
+
+  <!-- ======================================================
+       SECTION: LOG AKTIVITAS
+       ====================================================== -->
+  <div class="admin-content admin-content--hidden" id="sectionAktivitas">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h3>Log Aktivitas Admin</h3>
+        <button class="btn-ghost btn-ghost--sm" onclick="clearActivityLog()">🗑 Hapus Log</button>
+      </div>
+      <div style="padding:.5rem 0;" id="activityLogList">
+        <p style="text-align:center;padding:2rem;color:var(--color-text-muted);">Belum ada aktivitas tercatat.</p>
+      </div>
+    </div>
+  </div><!-- /sectionAktivitas -->
+
+</div><!-- /admin-main -->
+</div><!-- /admin-layout -->
+
+<!-- ============================================================
+     MODAL: TAMBAH / EDIT PRODUK
+     ============================================================ -->
+<div class="modal-overlay" id="productModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+    <div class="modal-header">
+      <h3 class="modal-title" id="productModalTitle">Tambah Produk Baru</h3>
+      <button class="modal-close" aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form class="modal-form" id="productForm" novalidate>
+      <input type="hidden" id="productId" />
+      <div class="modal-form-grid">
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="prodNama">Nama Produk <span class="required">*</span></label>
+          <input type="text" id="prodNama" class="form-input" placeholder="Contoh: Kemeja Oxford Slim Fit Navy" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodBrand">Brand / Label</label>
+          <input type="text" id="prodBrand" class="form-input" placeholder="Contoh: MANKUTU Basics" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodKategori">Kategori <span class="required">*</span></label>
+          <select id="prodKategori" class="form-input">
+            <option value="">Pilih Kategori</option>
+            <option value="pakaian">Pakaian</option>
+            <option value="aksesoris">Aksesoris</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodSubKategori">Sub-Kategori</label>
+          <select id="prodSubKategori" class="form-input">
+            <option value="">Pilih Sub-Kategori</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodHarga">Harga Jual (Rp) <span class="required">*</span></label>
+          <input type="number" id="prodHarga" class="form-input" placeholder="189000" min="0" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodHargaCoret">Harga Coret (Rp) <small style="font-weight:400;color:var(--color-text-faint);">opsional</small></label>
+          <input type="number" id="prodHargaCoret" class="form-input" placeholder="249000" min="0" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodStok">Stok <span class="required">*</span></label>
+          <input type="number" id="prodStok" class="form-input" placeholder="20" min="0" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodBadge">Badge Label</label>
+          <select id="prodBadge" class="form-input">
+            <option value="">Tidak Ada</option>
+            <option value="new">New</option>
+            <option value="sale">Sale</option>
+            <option value="best">Best Seller</option>
+            <option value="exclusive">Exclusive</option>
+            <option value="limited">Limited</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prodStatus">Status</label>
+          <select id="prodStatus" class="form-input">
+            <option value="aktif">Aktif (tampil di katalog)</option>
+            <option value="nonaktif">Non-aktif (disembunyikan)</option>
+          </select>
+        </div>
+
+        <!-- ── Fit Type ── -->
+        <div class="form-group">
+          <label class="form-label" for="prodFitType">Fit / Potongan</label>
+          <select id="prodFitType" class="form-input">
+            <option value="">— Pilih Fit —</option>
+            <option value="slim-fit">Slim Fit</option>
+            <option value="regular-fit">Regular Fit</option>
+            <option value="relaxed-fit">Relaxed Fit</option>
+            <option value="oversized">Oversized</option>
+            <option value="boxy">Boxy</option>
+            <option value="cropped">Cropped</option>
+            <option value="straight">Straight</option>
+            <option value="tapered">Tapered</option>
+            <option value="one-size">One Size</option>
+          </select>
+        </div>
+
+        <!-- ── Material ── -->
+        <div class="form-group">
+          <label class="form-label" for="prodMaterial">Material</label>
+          <input type="text" id="prodMaterial" class="form-input" placeholder="Contoh: Cotton 100%, Linen Premium" />
+        </div>
+
+        <!-- ── Ukuran Tersedia ── -->
+        <div class="form-group form-group--full">
+          <label class="form-label">Ukuran Tersedia</label>
+          <div id="prodSizesWrap" style="display:flex;flex-wrap:wrap;gap:.5rem;padding:.5rem 0;">
+            <label class="size-chip"><input type="checkbox" value="XS" class="prod-size-cb"> XS</label>
+            <label class="size-chip"><input type="checkbox" value="S"  class="prod-size-cb"> S</label>
+            <label class="size-chip"><input type="checkbox" value="M"  class="prod-size-cb"> M</label>
+            <label class="size-chip"><input type="checkbox" value="L"  class="prod-size-cb"> L</label>
+            <label class="size-chip"><input type="checkbox" value="XL" class="prod-size-cb"> XL</label>
+            <label class="size-chip"><input type="checkbox" value="XXL" class="prod-size-cb"> XXL</label>
+            <label class="size-chip"><input type="checkbox" value="3XL" class="prod-size-cb"> 3XL</label>
+            <label class="size-chip"><input type="checkbox" value="27"  class="prod-size-cb"> 27</label>
+            <label class="size-chip"><input type="checkbox" value="28"  class="prod-size-cb"> 28</label>
+            <label class="size-chip"><input type="checkbox" value="29"  class="prod-size-cb"> 29</label>
+            <label class="size-chip"><input type="checkbox" value="30"  class="prod-size-cb"> 30</label>
+            <label class="size-chip"><input type="checkbox" value="31"  class="prod-size-cb"> 31</label>
+            <label class="size-chip"><input type="checkbox" value="32"  class="prod-size-cb"> 32</label>
+            <label class="size-chip"><input type="checkbox" value="33"  class="prod-size-cb"> 33</label>
+            <label class="size-chip"><input type="checkbox" value="34"  class="prod-size-cb"> 34</label>
+            <label class="size-chip"><input type="checkbox" value="One Size" class="prod-size-cb"> One Size</label>
+          </div>
+          <small class="form-hint">Centang ukuran yang tersedia untuk produk ini</small>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="prodDeskripsi">Deskripsi Produk</label>
+          <textarea id="prodDeskripsi" class="form-input form-textarea" rows="3" placeholder="Deskripsi singkat produk..."></textarea>
+        </div>
+
+        <!-- Gambar Produk: URL + Upload + Preview -->
+        <div class="form-group form-group--full">
+          <label class="form-label">Gambar Produk Utama</label>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:start">
+            <div>
+              <input type="url" id="prodGambar" class="form-input" placeholder="https://images.unsplash.com/... atau upload file"
+                     oninput="window.previewProdImg('main',this.value)" />
+              <small class="form-hint" style="display:block;margin-top:.3rem">Atau pilih file gambar:</small>
+              <input type="file" id="prodGambarFile" accept="image/*" style="margin-top:.3rem;font-size:.8rem;width:100%"
+                     onchange="window.handleImgUpload('main',this)">
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem;flex-shrink:0;">
+              <div id="imgPreviewMain" style="width:80px;height:100px;border-radius:6px;overflow:hidden;background:#f0ede7;border:1px solid #ddd;">
+                <img id="imgPreviewMainEl" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+                <div id="imgPreviewMainIcon" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#ccc">🖼️</div>
+              </div>
+              <button type="button" id="btnClearMain" onclick="window.clearProdImg('main')" style="display:none;font-size:.68rem;color:#b03030;background:none;border:1px solid rgba(176,48,48,.3);border-radius:3px;padding:2px 7px;cursor:pointer;">✕ Hapus</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group form-group--full">
+          <label class="form-label">Gambar Hover (Opsional)</label>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:start">
+            <div>
+              <input type="url" id="prodGambarHover" class="form-input" placeholder="URL gambar hover saat kursor di atas kartu"
+                     oninput="window.previewProdImg('hover',this.value)" />
+              <input type="file" id="prodGambarHoverFile" accept="image/*" style="margin-top:.3rem;font-size:.8rem;width:100%"
+                     onchange="window.handleImgUpload('hover',this)">
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem;flex-shrink:0;">
+              <div id="imgPreviewHover" style="width:80px;height:100px;border-radius:6px;overflow:hidden;background:#f0ede7;border:1px solid #ddd;">
+                <img id="imgPreviewHoverEl" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+                <div id="imgPreviewHoverIcon" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#ccc">🖼️</div>
+              </div>
+              <button type="button" id="btnClearHover" onclick="window.clearProdImg('hover')" style="display:none;font-size:.68rem;color:#b03030;background:none;border:1px solid rgba(176,48,48,.3);border-radius:3px;padding:2px 7px;cursor:pointer;">✕ Hapus</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost btn-ghost--sm" id="btnCancelModal">Batal</button>
+        <button type="submit" class="btn-primary btn-primary--sm" id="btnSaveProduct">Simpan Produk</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: DETAIL PESANAN
+     ============================================================ -->
+<div class="modal-overlay" id="orderDetailModal" hidden>
+  <div class="modal" style="max-width:680px;" role="dialog" aria-modal="true" aria-labelledby="orderDetailTitle">
+    <div class="modal-header">
+      <h3 class="modal-title" id="orderDetailTitle">Detail Pesanan</h3>
+      <button class="modal-close" aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-scroll-body" style="padding:1.5rem;" id="orderDetailBody">
+      Memuat...
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-ghost btn-ghost--sm modal-close">Tutup</button>
+      <button type="button" class="btn-primary btn-primary--sm" id="btnDetailEditStatus">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit Pesanan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: TAMBAH / EDIT PESANAN
+     ============================================================ -->
+<div class="modal-overlay" id="orderModal" hidden>
+  <div class="modal" style="max-width:720px;" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
+    <div class="modal-header">
+      <h3 class="modal-title" id="orderModalTitle">Tambah Pesanan Baru</h3>
+      <button class="modal-close" aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <form class="modal-form" id="orderForm" novalidate style="padding-top:.5rem;">
+      <input type="hidden" id="orderId" />
+
+      <!-- Info Pelanggan -->
+      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--color-gold);margin-bottom:.75rem;font-weight:500;">Informasi Pelanggan</p>
+      <div class="modal-form-grid">
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="ordCustomerId">Pilih Pelanggan Terdaftar</label>
+          <select id="ordCustomerId" class="form-input">
+            <option value="">Pilih dari daftar...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="ordCustomerName">Nama Pelanggan <span class="required">*</span></label>
+          <input type="text" id="ordCustomerName" class="form-input" placeholder="Nama lengkap" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="ordCustomerPhone">Nomor Telepon</label>
+          <input type="tel" id="ordCustomerPhone" class="form-input" placeholder="0812-xxxx-xxxx" />
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="ordCustomerAddr">Alamat Pengiriman</label>
+          <input type="text" id="ordCustomerAddr" class="form-input" placeholder="Alamat lengkap pengiriman" />
+        </div>
+
+      </div>
+
+      <!-- Item Produk -->
+      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--color-gold);margin:.75rem 0;font-weight:500;">Item Produk <span class="required">*</span></p>
+
+      <div class="table-wrapper" style="border:1px solid rgba(28,28,30,.08);border-radius:6px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:var(--color-bg);">
+              <th style="padding:.5rem .6rem;font-size:.7rem;letter-spacing:.08em;color:var(--color-text-muted);text-align:left;">Produk</th>
+              <th style="padding:.5rem .6rem;font-size:.7rem;letter-spacing:.08em;color:var(--color-text-muted);text-align:left;width:80px;">Qty</th>
+              <th style="padding:.5rem .6rem;font-size:.7rem;letter-spacing:.08em;color:var(--color-text-muted);text-align:left;width:130px;">Harga (Rp)</th>
+              <th style="padding:.5rem .6rem;font-size:.7rem;letter-spacing:.08em;color:var(--color-text-muted);text-align:left;width:110px;">Subtotal</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="orderItemsBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.4rem;">
+        <button type="button" class="btn-add-item" id="btnAddOrderItem">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Tambah Produk
+        </button>
+        <div class="order-total-bar">
+          <span>Total:</span>
+          <strong id="orderTotalPreview">Rp 0</strong>
+        </div>
+      </div>
+
+      <!-- Info Tambahan -->
+      <p style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:var(--color-gold);margin:.75rem 0 .5rem;font-weight:500;">Info Tambahan</p>
+      <div class="modal-form-grid">
+
+        <div class="form-group">
+          <label class="form-label" for="ordPayment">Metode Pembayaran</label>
+          <select id="ordPayment" class="form-input">
+            <option value="Transfer Bank">Transfer Bank</option>
+            <option value="COD">COD (Bayar di Tempat)</option>
+            <option value="E-Wallet">E-Wallet</option>
+            <option value="Kartu Kredit">Kartu Kredit</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="ordStatus">Status Pesanan</label>
+          <select id="ordStatus" class="form-input">
+            <option value="diproses">Diproses</option>
+            <option value="dikirim">Dikirim</option>
+            <option value="selesai">Selesai</option>
+            <option value="dibatalkan">Dibatalkan</option>
+          </select>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="ordNotes">Catatan</label>
+          <textarea id="ordNotes" class="form-input form-textarea" rows="2" placeholder="Catatan khusus untuk pesanan ini..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost btn-ghost--sm modal-close">Batal</button>
+        <button type="submit" class="btn-primary btn-primary--sm" id="btnSaveOrder">Simpan Pesanan</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: TAMBAH / EDIT PELANGGAN
+     ============================================================ -->
+<div class="modal-overlay" id="customerModal" hidden>
+  <div class="modal" style="max-width:520px;" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle">
+    <div class="modal-header">
+      <h3 class="modal-title" id="customerModalTitle">Tambah Pelanggan</h3>
+      <button class="modal-close" aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <form class="modal-form" id="customerForm" novalidate>
+      <input type="hidden" id="customerId" />
+      <div class="modal-form-grid">
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="cusName">Nama Lengkap <span class="required">*</span></label>
+          <input type="text" id="cusName" class="form-input" placeholder="Nama lengkap pelanggan" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cusEmail">Email</label>
+          <input type="email" id="cusEmail" class="form-input" placeholder="email@contoh.com" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cusPhone">Nomor HP</label>
+          <input type="tel" id="cusPhone" class="form-input" placeholder="0812-xxxx-xxxx" />
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label" for="cusAddress">Alamat</label>
+          <textarea id="cusAddress" class="form-input form-textarea" rows="2" placeholder="Alamat lengkap pelanggan..."></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost btn-ghost--sm modal-close">Batal</button>
+        <button type="submit" class="btn-primary btn-primary--sm" id="btnSaveCustomer">Simpan Pelanggan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: RIWAYAT PESANAN PELANGGAN
+     ============================================================ -->
+<div class="modal-overlay" id="cusOrdersModal" hidden>
+  <div class="modal" style="max-width:680px;" role="dialog" aria-modal="true" aria-labelledby="cusOrdersTitle">
+    <div class="modal-header">
+      <h3 class="modal-title" id="cusOrdersTitle">Riwayat Pesanan</h3>
+      <button class="modal-close" aria-label="Tutup">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-scroll-body" style="padding:1.5rem;" id="cusOrdersBody">Memuat...</div>
+    <div class="modal-footer">
+      <button type="button" class="btn-ghost btn-ghost--sm modal-close">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============================================================
+     SCRIPTS — urutan penting!
+     ============================================================ -->
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+<script src="admin.js"></script>
+
+  <!-- ===== MODAL PROFIL ADMIN ===== -->
+  <div class="modal-overlay" id="adminProfileModal" hidden>
+    <div class="modal" style="max-width:460px" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h3 class="modal-title">Profil Administrator</h3>
+        <button class="modal-close" onclick="document.getElementById('adminProfileModal').hidden=true" aria-label="Tutup">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-scroll-body" style="padding:1.5rem">
+        <!-- Avatar admin -->
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <div id="adminAvatarCircle" style="width:72px;height:72px;border-radius:50%;background:#B8960C;color:#fff;font-size:1.4rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">AD</div>
+          <p style="font-size:.78rem;color:#aaa">Klik untuk upload foto</p>
+          <input type="file" id="adminAvatarFile" accept="image/*" style="display:none" onchange="window.handleAdminAvatarUpload(this)">
+          <button onclick="document.getElementById('adminAvatarFile').click()" class="btn-ghost btn-ghost--sm" style="margin-top:.4rem">📷 Ganti Foto</button>
+        </div>
+        <div style="display:grid;gap:1rem">
+          <div class="form-group">
+            <label class="form-label">Nama Admin</label>
+            <input id="adminProfName" type="text" class="form-input" placeholder="Nama administrator">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input id="adminProfEmail" type="email" class="form-input" placeholder="email@arkhivez.id">
+          </div>
+          <details style="border:1px solid #e0e0e0;border-radius:8px;padding:.75rem">
+            <summary style="cursor:pointer;font-size:.85rem;font-weight:600;list-style:none">🔒 Ganti Password</summary>
+            <div style="margin-top:.75rem;display:grid;gap:.75rem">
+              <div class="form-group">
+                <label class="form-label" style="font-size:.8rem">Password Lama</label>
+                <input id="adminPwOld" type="password" class="form-input" placeholder="Password saat ini">
+              </div>
+              <div class="form-group">
+                <label class="form-label" style="font-size:.8rem">Password Baru</label>
+                <input id="adminPwNew" type="password" class="form-input" placeholder="Min. 6 karakter">
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost btn-ghost--sm" onclick="document.getElementById('adminProfileModal').hidden=true">Batal</button>
+        <button class="btn-primary btn-primary--sm" onclick="window.saveAdminProfile()">Simpan Perubahan ✓</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
